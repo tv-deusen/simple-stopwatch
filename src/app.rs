@@ -26,8 +26,15 @@ enum State {
 impl eframe::App for StopwatchApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
-            ui.heading("Stopwatch");
-            ui.vertical(|ui| {
+            let available_height = ui.available_height();
+
+            // Proportional spacing
+            let timer_height = available_height * 0.60;
+            let button_height = available_height * 0.40;
+
+            // Timer display
+            ui.add_space(timer_height * 0.5);
+            ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
                 if self.state == State::Running {
                     let cc = ctx.clone();
                     task::spawn(async move {
@@ -35,38 +42,67 @@ impl eframe::App for StopwatchApp {
                         cc.request_repaint();
                     });
                 }
-                ui.label(self.timer.elapsed());
-                ui.horizontal(|ui| match self.state {
-                    State::Stopped => {
-                        if ui.button("Start").clicked() {
-                            self.timer.start();
-                            self.state = State::Running;
+                ui.label(
+                    egui::RichText::new(self.timer.elapsed().to_string())
+                        .heading()
+                        .strong()
+                        .size(50.0),
+                );
+            });
+
+            // Buttons
+            ui.add_space(button_height * 0.25);
+            ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
+                ui.horizontal_centered(|ui| {
+                    match self.state {
+                        State::Stopped => {
+                            if ui
+                                .add_sized([200.0, 60.0], egui::Button::new("Start"))
+                                .clicked()
+                            {
+                                self.timer.start();
+                                self.state = State::Running;
+                            }
                         }
-                    }
-                    State::Running => {
-                        ui.horizontal(|ui| {
-                            if ui.button("Pause").clicked() {
+                        State::Running => {
+                            if ui
+                                .add_sized([150.0, 50.0], egui::Button::new("Pause"))
+                                .clicked()
+                            {
                                 self.timer.pause();
                                 self.state = State::Paused;
                             }
-                            if ui.button("Stop").clicked() {
+                            ui.add_space(20.0); // Space between buttons
+                            if ui
+                                .add_sized([150.0, 50.0], egui::Button::new("Stop"))
+                                .clicked()
+                            {
                                 self.timer.reset();
                                 self.state = State::Stopped;
                             }
-                        });
-                    }
-                    State::Paused => {
-                        if ui.button("Resume").clicked() {
-                            self.timer.start();
-                            self.state = State::Running;
                         }
-                        if ui.button("Stop").clicked() {
-                            self.timer.reset();
-                            self.state = State::Stopped;
+                        State::Paused => {
+                            if ui
+                                .add_sized([150.0, 50.0], egui::Button::new("Resume"))
+                                .clicked()
+                            {
+                                self.timer.start();
+                                self.state = State::Running;
+                            }
+                            ui.add_space(20.0); // Space between buttons
+                            if ui
+                                .add_sized([150.0, 50.0], egui::Button::new("Stop"))
+                                .clicked()
+                            {
+                                self.timer.reset();
+                                self.state = State::Stopped;
+                            }
                         }
                     }
                 });
-            })
+            });
+
+            ui.add_space(button_height * 0.25);
         });
     }
 }

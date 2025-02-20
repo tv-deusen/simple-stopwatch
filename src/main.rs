@@ -8,7 +8,6 @@ use eframe::egui;
 
 #[tokio::main]
 async fn main() -> Result<(), eframe::Error> {
-    tracing_subscriber::fmt::init();
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
             .with_inner_size([400.0, 300.0])
