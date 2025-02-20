@@ -3,16 +3,17 @@ use std::time::{Duration, Instant};
 
 use tracing::instrument;
 
-#[derive(Debug)]
-enum TimerState {
+#[derive(Debug, Default, Eq, PartialEq)]
+pub enum TimerState {
+    #[default]
     Stopped,
     Paused,
     Running,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Timer {
-    state: TimerState,
+    pub state: TimerState,
     start_time: Option<Instant>,
     accumulated_time: Option<Duration>,
 }
@@ -41,7 +42,7 @@ impl Timer {
     }
 
     #[instrument]
-    pub fn unpause(&mut self) {
+    pub fn resume(&mut self) {
         self.state = TimerState::Running;
         self.start_time = Some(Instant::now());
         self.accumulated_time = Some(Duration::new(0, 0));
@@ -53,16 +54,24 @@ impl Timer {
         self.start_time = None;
         self.accumulated_time = None;
     }
-}
 
-impl Display for Timer {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    #[instrument]
+    pub fn elapsed(&self) -> String {
+        if self.state == TimerState::Stopped {
+            return String::from("00:00:00");
+        }
         let elapsed = self.accumulated_time.unwrap()
             + Instant::now().duration_since(self.start_time.unwrap());
         // write!(f, "{}", elapsed.as_millis())
         let hours = elapsed.as_secs() / 3600;
         let minutes = elapsed.as_secs() / 60 % 60;
         let seconds = elapsed.as_secs() % 60;
-        write!(f, "{:02}:{:02}:{:02}", hours, minutes, seconds)
+        String::from(format!("{:02}:{:02}:{:02}", hours, minutes, seconds))
+    }
+}
+
+impl Display for Timer {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.elapsed())
     }
 }
