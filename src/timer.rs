@@ -7,13 +7,6 @@ pub struct Timer {
 }
 
 impl Timer {
-    pub fn new() -> Self {
-        Timer {
-            start_time: None,
-            elapsed_time: Duration::ZERO,
-        }
-    }
-
     pub fn start(&mut self) {
         self.start_time = Some(Instant::now());
     }
