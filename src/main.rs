@@ -6,7 +6,8 @@ mod timer;
 use crate::app::StopwatchApp;
 use eframe::egui;
 
-fn main() -> eframe::Result {
+#[tokio::main]
+async fn main() -> Result<(), eframe::Error> {
     tracing_subscriber::fmt::init();
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
